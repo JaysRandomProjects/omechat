@@ -7,15 +7,35 @@ const xss = require('xss');
 
 const app = express();
 const server = http.createServer(app);
+
+// Enable trust proxy so rate limiters work behind global reverse proxies like Render, Railway, Heroku, or Cloudflare
+app.set('trust proxy', 1);
+
 const io = new Server(server, {
-  cors: { origin: '*', methods: ['GET', 'POST'] }
+  cors: {
+    origin: '*',
+    methods: ['GET', 'POST']
+  }
 });
 
-// Security & Rate Limiting Middleware
-app.use(helmet({ contentSecurityPolicy: false }));
-app.use(rateLimit({ windowMs: 15 * 60 * 1000, max: 200 }));
+// Security & Helmet Policy (Allows CDN assets for React, Tailwind, Socket.io)
+app.use(
+  helmet({
+    contentSecurityPolicy: false,
+    crossOriginEmbedderPolicy: false
+  })
+);
 
-// Matchmaking Queues & State Tracking
+// Global HTTP Rate Limiter
+app.use(
+  rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 300,
+    message: 'Too many requests from this IP.'
+  })
+);
+
+// Matchmaking Queues & State
 const queues = { text: new Set(), video: new Set() };
 const activePairs = new Map(); // socket.id -> partnerSocket.id
 const userModes = new Map();   // socket.id -> 'text' | 'video'
@@ -23,11 +43,11 @@ const rateLimitTracker = new Map();
 
 io.on('connection', (socket) => {
 
-  // Rate limiter: Max 5 messages every 3 seconds per socket
+  // Message rate limit: Max 5 messages per 3 seconds
   const isRateLimited = () => {
     const now = Date.now();
     const timestamps = rateLimitTracker.get(socket.id) || [];
-    const recent = timestamps.filter(t => now - t < 3000);
+    const recent = timestamps.filter((t) => now - t < 3000);
     recent.push(now);
     rateLimitTracker.set(socket.id, recent);
     return recent.length > 5;
@@ -47,7 +67,7 @@ io.on('connection', (socket) => {
     }
   };
 
-  // Queue Matchmaking Logic
+  // Matchmaking logic
   socket.on('join_queue', ({ mode }) => {
     if (mode !== 'text' && mode !== 'video') return;
     disconnectPartner();
@@ -57,7 +77,6 @@ io.on('connection', (socket) => {
     const queue = queues[mode];
 
     if (queue.size > 0) {
-      // Find waiting user
       const partnerId = queue.values().next().value;
       queue.delete(partnerId);
 
@@ -68,11 +87,10 @@ io.on('connection', (socket) => {
         return;
       }
 
-      // Pair Users
       activePairs.set(socket.id, partnerId);
       activePairs.set(partnerId, socket.id);
 
-      // Instruct socket.id to initiate WebRTC offer if mode === 'video'
+      // Instruct initiator to send WebRTC offer
       socket.emit('matched', { partnerId, initiator: true, mode });
       partnerSocket.emit('matched', { partnerId: socket.id, initiator: false, mode });
     } else {
@@ -102,7 +120,7 @@ io.on('connection', (socket) => {
     });
   });
 
-  // WebRTC Signaling Events
+  // WebRTC Global Signaling
   socket.on('webrtc_offer', ({ offer }) => {
     const partnerId = activePairs.get(socket.id);
     if (partnerId) io.to(partnerId).emit('webrtc_offer', { offer });
@@ -134,7 +152,7 @@ io.on('connection', (socket) => {
   });
 });
 
-// Single Route serving the complete client UI
+// Serve frontend SPA
 app.get('/', (req, res) => {
   res.send(`
 <!DOCTYPE html>
@@ -162,10 +180,29 @@ app.get('/', (req, res) => {
   <script type="text/babel">
     const { useState, useEffect, useRef } = React;
 
+    // Free public STUN/TURN configuration for global NAT traversal
     const ICE_SERVERS = {
       iceServers: [
         { urls: 'stun:stun.l.google.com:19302' },
-        { urls: 'stun:stun1.l.google.com:19302' }
+        { urls: 'stun:stun1.l.google.com:19302' },
+        { urls: 'stun:stun2.l.google.com:19302' },
+        { urls: 'stun:stun3.l.google.com:19302' },
+        { urls: 'stun:stun4.l.google.com:19302' },
+        {
+          urls: 'turn:openrelay.metered.ca:80',
+          username: 'openrelayproject',
+          credential: 'openrelayproject'
+        },
+        {
+          urls: 'turn:openrelay.metered.ca:443',
+          username: 'openrelayproject',
+          credential: 'openrelayproject'
+        },
+        {
+          urls: 'turn:openrelay.metered.ca:443?transport=tcp',
+          username: 'openrelayproject',
+          credential: 'openrelayproject'
+        }
       ]
     };
 
@@ -218,7 +255,7 @@ app.get('/', (req, res) => {
             await peerConnectionRef.current.setLocalDescription(answer);
             socketRef.current.emit('webrtc_answer', { answer });
           } catch (e) {
-            console.error('Error handling WebRTC offer:', e);
+            console.error('WebRTC Offer Error:', e);
           }
         });
 
@@ -227,7 +264,7 @@ app.get('/', (req, res) => {
             try {
               await peerConnectionRef.current.setRemoteDescription(new RTCSessionDescription(answer));
             } catch (e) {
-              console.error('Error handling WebRTC answer:', e);
+              console.error('WebRTC Answer Error:', e);
             }
           }
         });
@@ -237,7 +274,7 @@ app.get('/', (req, res) => {
             try {
               await peerConnectionRef.current.addIceCandidate(new RTCIceCandidate(candidate));
             } catch (e) {
-              console.error('Error adding ICE candidate:', e);
+              console.error('ICE Candidate Error:', e);
             }
           }
         });
@@ -248,7 +285,7 @@ app.get('/', (req, res) => {
         });
 
         socketRef.current.on('partner_reported', () => {
-          setSystemAlert('Partner was reported. Finding a new user...');
+          setSystemAlert('Partner was reported. Finding someone new...');
           handleNext();
         });
 
@@ -295,7 +332,7 @@ app.get('/', (req, res) => {
             socketRef.current.emit('webrtc_offer', { offer });
           }
         } catch (err) {
-          setSystemAlert("Could not access camera/mic for video chat.");
+          setSystemAlert("Camera/Mic permission required for video chat (HTTPS required).");
         }
       };
 
@@ -327,7 +364,7 @@ app.get('/', (req, res) => {
             localStreamRef.current = stream;
             if (localVideoRef.current) localVideoRef.current.srcObject = stream;
           } catch(e) {
-            setSystemAlert("Camera/Mic permissions are required for video chat.");
+            setSystemAlert("Camera and Microphone access are required.");
           }
         }
 
@@ -381,7 +418,6 @@ app.get('/', (req, res) => {
 
       return (
         <div className="flex flex-col min-h-screen bg-[#0B0C10] text-gray-100">
-          {/* Top Bar Header */}
           <header className="border-b border-gray-800 bg-[#121318]/90 backdrop-blur sticky top-0 z-50">
             <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
               <div onClick={handleStop} className="flex items-center gap-3 cursor-pointer">
@@ -399,7 +435,6 @@ app.get('/', (req, res) => {
             </div>
           </header>
 
-          {/* Main Application Interface */}
           <main className="flex-1 flex flex-col">
             {systemAlert && (
               <div className="bg-amber-500/10 border-b border-amber-500/20 text-amber-300 px-4 py-2 text-xs text-center font-medium">
@@ -407,14 +442,13 @@ app.get('/', (req, res) => {
               </div>
             )}
 
-            {/* View 1: Landing Page */}
             {view === 'landing' && (
               <div className="flex-1 flex flex-col justify-center items-center px-4 py-12 max-w-4xl mx-auto text-center">
                 <div className="inline-block px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-xs font-semibold mb-6">
-                  ✨ Modern, Encrypted & Instant Matching
+                  🌍 Global WebRTC & Instant Matching
                 </div>
                 <h1 className="text-5xl font-extrabold text-white mb-4 tracking-tight">Talk to someone new.</h1>
-                <p className="text-gray-400 text-lg mb-10 max-w-xl">Meet random people worldwide over real-time text or WebRTC video.</p>
+                <p className="text-gray-400 text-lg mb-10 max-w-xl">Meet random strangers globally over real-time text or video streams.</p>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-lg mb-12">
                   <div onClick={() => startChatting('text')} className="bg-[#121318] border border-gray-800 hover:border-indigo-500 p-6 rounded-2xl cursor-pointer text-left transition hover:-translate-y-1">
@@ -427,17 +461,15 @@ app.get('/', (req, res) => {
                   <div onClick={() => startChatting('video')} className="bg-[#121318] border border-gray-800 hover:border-cyan-500 p-6 rounded-2xl cursor-pointer text-left transition hover:-translate-y-1">
                     <div className="text-3xl mb-3">📹</div>
                     <h3 className="text-xl font-bold text-white mb-1">Video Chat</h3>
-                    <p className="text-xs text-gray-400">Peer-to-peer HD video & audio streaming.</p>
+                    <p className="text-xs text-gray-400">P2P video streaming across networks.</p>
                     <button className="mt-6 w-full py-2 rounded-xl bg-gradient-to-r from-indigo-600 to-cyan-600 text-white font-semibold text-xs">Start Video</button>
                   </div>
                 </div>
               </div>
             )}
 
-            {/* View 2: Active Chat Interface */}
             {view === 'chat' && (
               <div className="flex-1 flex flex-col md:flex-row max-w-7xl w-full mx-auto p-4 gap-4 h-[calc(100vh-4rem)]">
-                
                 {chatMode === 'video' && (
                   <div className="flex-1 bg-[#121318] border border-gray-800 rounded-2xl relative overflow-hidden flex items-center justify-center min-h-[250px]">
                     <video ref={remoteVideoRef} autoPlay playsInline className="w-full h-full object-cover" />
@@ -517,13 +549,12 @@ app.get('/', (req, res) => {
               </div>
             )}
 
-            {/* View 3: Safety Guidelines */}
             {view === 'guidelines' && (
               <div className="flex-1 max-w-2xl mx-auto px-4 py-10 text-sm text-gray-300 space-y-4">
                 <h1 className="text-2xl font-bold text-white mb-4">Safety & Guidelines</h1>
                 <div className="p-4 bg-[#121318] border border-gray-800 rounded-xl">1. Must be 18 years or older.</div>
                 <div className="p-4 bg-[#121318] border border-gray-800 rounded-xl">2. Explicit or offensive behavior results in instant ban.</div>
-                <div className="p-4 bg-[#121318] border border-gray-800 rounded-xl">3. Never share private details or financial information with strangers.</div>
+                <div className="p-4 bg-[#121318] border border-gray-800 rounded-xl">3. Never share private details with strangers.</div>
               </div>
             )}
           </main>
@@ -540,5 +571,5 @@ app.get('/', (req, res) => {
 
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
-  console.log(`OmeChat Server running at http://localhost:${PORT}`);
+  console.log(`OmeChat Server running globally on port ${PORT}`);
 });
