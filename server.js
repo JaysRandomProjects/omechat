@@ -8,7 +8,7 @@ const xss = require('xss');
 const app = express();
 const server = http.createServer(app);
 
-// Enable trust proxy so rate limiters work behind global reverse proxies like Render, Railway, Heroku, or Cloudflare
+// Enable trust proxy for global reverse proxies (Render, Railway, Cloudflare, etc.)
 app.set('trust proxy', 1);
 
 const io = new Server(server, {
@@ -18,7 +18,7 @@ const io = new Server(server, {
   }
 });
 
-// Security & Helmet Policy (Allows CDN assets for React, Tailwind, Socket.io)
+// Security & Helmet Policy
 app.use(
   helmet({
     contentSecurityPolicy: false,
@@ -26,7 +26,7 @@ app.use(
   })
 );
 
-// Global HTTP Rate Limiter
+// Global Rate Limiting
 app.use(
   rateLimit({
     windowMs: 15 * 60 * 1000,
@@ -35,7 +35,7 @@ app.use(
   })
 );
 
-// Matchmaking Queues & State
+// Matchmaking Queues & State Tracking
 const queues = { text: new Set(), video: new Set() };
 const activePairs = new Map(); // socket.id -> partnerSocket.id
 const userModes = new Map();   // socket.id -> 'text' | 'video'
@@ -90,7 +90,6 @@ io.on('connection', (socket) => {
       activePairs.set(socket.id, partnerId);
       activePairs.set(partnerId, socket.id);
 
-      // Instruct initiator to send WebRTC offer
       socket.emit('matched', { partnerId, initiator: true, mode });
       partnerSocket.emit('matched', { partnerId: socket.id, initiator: false, mode });
     } else {
@@ -152,7 +151,7 @@ io.on('connection', (socket) => {
   });
 });
 
-// Serve frontend SPA
+// Serve Frontend SPA
 app.get('/', (req, res) => {
   res.send(`
 <!DOCTYPE html>
@@ -180,7 +179,6 @@ app.get('/', (req, res) => {
   <script type="text/babel">
     const { useState, useEffect, useRef } = React;
 
-    // Free public STUN/TURN configuration for global NAT traversal
     const ICE_SERVERS = {
       iceServers: [
         { urls: 'stun:stun.l.google.com:19302' },
@@ -332,7 +330,7 @@ app.get('/', (req, res) => {
             socketRef.current.emit('webrtc_offer', { offer });
           }
         } catch (err) {
-          setSystemAlert("Camera/Mic permission required for video chat (HTTPS required).");
+          setSystemAlert("Camera/Mic permission required for video chat.");
         }
       };
 
