@@ -258,16 +258,25 @@ app.get('/', (req, res) => {
 
       const fetchIceServers = async () => {
         try {
-          // Dynamic fetch using your Metered API key
-          const response = await fetch("https://YOUR_METERED_APP_NAME.metered.live/api/v1/turn/credentials?apiKey=YOUR_METERED_API_KEY");
+          const response = await fetch("https://docuscout.metered.live/api/v1/turn/credentials?apiKey=4538db28cfe97fd54d044680145600e8374752ec");
           const iceServers = await response.json();
           return { iceServers };
         } catch (e) {
-          console.error("Failed to fetch TURN servers, using STUN fallback", e);
+          console.error("Failed to fetch TURN servers, using fallback", e);
           return {
             iceServers: [
               { urls: 'stun:stun.l.google.com:19302' },
-              { urls: 'stun:stun1.l.google.com:19302' }
+              { urls: 'stun:stun1.l.google.com:19302' },
+              {
+                urls: 'turn:openrelay.metered.ca:80',
+                username: 'openrelay',
+                credential: 'openrelay'
+              },
+              {
+                urls: 'turn:openrelay.metered.ca:443',
+                username: 'openrelay',
+                credential: 'openrelay'
+              }
             ]
           };
         }
