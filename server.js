@@ -571,3 +571,15 @@ const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
   console.log(`OmeChat Server running globally on port ${PORT}`);
 });
+
+const ICE_SERVERS = {
+  iceServers: [
+    { urls: 'stun:stun.l.google.com:19302' },
+    { urls: 'stun:stun1.l.google.com:19302' },
+    {
+      urls: 'turn:global.relay.metered.ca:443?transport=tcp',
+      username: '4538db28cfe97fd54d044680145600e8374752ec', // <--- Your site key as username
+      credential: '4538db28cfe97fd54d044680145600e8374752ec' // <--- Use key here if no separate password was generated
+    }
+  ]
+};
