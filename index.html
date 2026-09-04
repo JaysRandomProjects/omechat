@@ -50,9 +50,9 @@
   <script type="text/babel">
     const { useState, useEffect, useRef } = React;
 
-    const SERVER_URL = "omechat-dshk.onrender.com";
+    const SERVER_HOST = "omechat-dshk.onrender.com";
 
-    // WebRTC ICE Configuration with STUN and TURN Relays
+    // ICE Configuration with STUN and TURN Relays for strict NAT / mobile firewall traversal
     const ICE_CONFIG = {
       iceServers: [
         { urls: 'stun:stun.l.google.com:19302' },
@@ -95,7 +95,7 @@
       // Connect to global signaling server on Render
       useEffect(() => {
         const peer = new Peer(undefined, {
-          host: SERVER_URL,
+          host: SERVER_HOST,
           port: 443,
           path: '/peerjs',
           secure: true,
@@ -197,7 +197,7 @@
         }
 
         if (peerRef.current && peerRef.current.id) {
-          fetch(`https://${SERVER_URL}/match?id=${peerRef.current.id}&mode=${mode}`)
+          fetch(`https://${SERVER_HOST}/match?id=${peerRef.current.id}&mode=${mode}`)
             .then(res => res.json())
             .then(data => {
               if (data.partnerId) {
@@ -278,7 +278,7 @@
 
       return (
         <div className="flex flex-col min-h-screen bg-black text-gray-200">
-          {/* Top Bar */}
+          {/* Header */}
           <header className="border-b border-zinc-900 bg-black px-6 h-16 flex items-center justify-between sticky top-0 z-50">
             <div onClick={handleStop} className="flex items-center gap-2 cursor-pointer logo-font">
               <span className="bubble-ome text-xl tracking-wider">OME</span>
@@ -415,7 +415,7 @@
                     <div ref={messagesEndRef} />
                   </div>
 
-                  <div className="p-[#121318] border-t border-zinc-900 bg-black flex flex-col gap-2 p-3">
+                  <div className="p-3 border-t border-zinc-900 bg-black flex flex-col gap-2">
                     <form onSubmit={sendMessage} className="flex gap-2">
                       <input
                         type="text"
