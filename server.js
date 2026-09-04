@@ -8,25 +8,14 @@ const xss = require('xss');
 const app = express();
 const server = http.createServer(app);
 
-// Enable trust proxy for global reverse proxies (Render, Railway, Cloudflare, etc.)
 app.set('trust proxy', 1);
 
 const io = new Server(server, {
-  cors: {
-    origin: '*',
-    methods: ['GET', 'POST']
-  }
+  cors: { origin: '*', methods: ['GET', 'POST'] }
 });
 
-// Security & Helmet Policy
-app.use(
-  helmet({
-    contentSecurityPolicy: false,
-    crossOriginEmbedderPolicy: false
-  })
-);
+app.use(helmet({ contentSecurityPolicy: false, crossOriginEmbedderPolicy: false }));
 
-// Global Rate Limiting
 app.use(
   rateLimit({
     windowMs: 15 * 60 * 1000,
@@ -35,15 +24,13 @@ app.use(
   })
 );
 
-// Matchmaking Queues & State Tracking
 const queues = { text: new Set(), video: new Set() };
-const activePairs = new Map(); // socket.id -> partnerSocket.id
-const userModes = new Map();   // socket.id -> 'text' | 'video'
+const activePairs = new Map();
+const userModes = new Map();
 const rateLimitTracker = new Map();
 
 io.on('connection', (socket) => {
 
-  // Message rate limit: Max 5 messages per 3 seconds
   const isRateLimited = () => {
     const now = Date.now();
     const timestamps = rateLimitTracker.get(socket.id) || [];
@@ -67,7 +54,6 @@ io.on('connection', (socket) => {
     }
   };
 
-  // Matchmaking logic
   socket.on('join_queue', ({ mode }) => {
     if (mode !== 'text' && mode !== 'video') return;
     disconnectPartner();
@@ -105,7 +91,7 @@ io.on('connection', (socket) => {
   });
 
   socket.on('send_message', (text) => {
-    if (isRateLimited()) return socket.emit('error_message', 'You are sending messages too fast.');
+    if (isRateLimited()) return socket.emit('error_message', 'Sending messages too fast.');
     const partnerId = activePairs.get(socket.id);
     if (!partnerId) return;
 
@@ -119,7 +105,6 @@ io.on('connection', (socket) => {
     });
   });
 
-  // WebRTC Global Signaling
   socket.on('webrtc_offer', ({ offer }) => {
     const partnerId = activePairs.get(socket.id);
     if (partnerId) io.to(partnerId).emit('webrtc_offer', { offer });
@@ -151,7 +136,6 @@ io.on('connection', (socket) => {
   });
 });
 
-// Serve Frontend SPA
 app.get('/', (req, res) => {
   res.send(`
 <!DOCTYPE html>
@@ -178,31 +162,6 @@ app.get('/', (req, res) => {
 
   <script type="text/babel">
     const { useState, useEffect, useRef } = React;
-
-    const ICE_SERVERS = {
-      iceServers: [
-        { urls: 'stun:stun.l.google.com:19302' },
-        { urls: 'stun:stun1.l.google.com:19302' },
-        { urls: 'stun:stun2.l.google.com:19302' },
-        { urls: 'stun:stun3.l.google.com:19302' },
-        { urls: 'stun:stun4.l.google.com:19302' },
-        {
-          urls: 'turn:openrelay.metered.ca:80',
-          username: 'openrelayproject',
-          credential: 'openrelayproject'
-        },
-        {
-          urls: 'turn:openrelay.metered.ca:443',
-          username: 'openrelayproject',
-          credential: 'openrelayproject'
-        },
-        {
-          urls: 'turn:openrelay.metered.ca:443?transport=tcp',
-          username: 'openrelayproject',
-          credential: 'openrelayproject'
-        }
-      ]
-    };
 
     function App() {
       const [view, setView] = useState('landing');
@@ -297,6 +256,23 @@ app.get('/', (req, res) => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
       }, [messages]);
 
+      const fetchIceServers = async () => {
+        try {
+          // Dynamic fetch using your Metered API key
+          const response = await fetch("https://YOUR_METERED_APP_NAME.metered.live/api/v1/turn/credentials?apiKey=YOUR_METERED_API_KEY");
+          const iceServers = await response.json();
+          return { iceServers };
+        } catch (e) {
+          console.error("Failed to fetch TURN servers, using STUN fallback", e);
+          return {
+            iceServers: [
+              { urls: 'stun:stun.l.google.com:19302' },
+              { urls: 'stun:stun1.l.google.com:19302' }
+            ]
+          };
+        }
+      };
+
       const setupWebRTC = async (isInitiator) => {
         try {
           if (!localStreamRef.current) {
@@ -305,7 +281,8 @@ app.get('/', (req, res) => {
             if (localVideoRef.current) localVideoRef.current.srcObject = stream;
           }
 
-          const pc = new RTCPeerConnection(ICE_SERVERS);
+          const rtcConfig = await fetchIceServers();
+          const pc = new RTCPeerConnection(rtcConfig);
           peerConnectionRef.current = pc;
 
           localStreamRef.current.getTracks().forEach(track => {
@@ -569,17 +546,5 @@ app.get('/', (req, res) => {
 
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
-  console.log(`OmeChat Server running globally on port ${PORT}`);
+  console.log(`Server running on port ${PORT}`);
 });
-
-const ICE_SERVERS = {
-  iceServers: [
-    { urls: 'stun:stun.l.google.com:19302' },
-    { urls: 'stun:stun1.l.google.com:19302' },
-    {
-      urls: 'turn:global.relay.metered.ca:443?transport=tcp',
-      username: '4538db28cfe97fd54d044680145600e8374752ec', // <--- Your site key as username
-      credential: '4538db28cfe97fd54d044680145600e8374752ec' // <--- Use key here if no separate password was generated
-    }
-  ]
-};
