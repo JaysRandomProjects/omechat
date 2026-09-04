@@ -163,7 +163,7 @@ app.get('/', (req, res) => {
   <script type="text/babel">
     const { useState, useEffect, useRef } = React;
 
-    const LOGO_IMAGE = "https://i.imgur.com/7b5dK2M.png"; // Replace with your uploaded image URL or relative path (/logo.png)
+    const LOGO_IMAGE = "https://i.imgur.com/7b5dK2M.png";
 
     function App() {
       const [view, setView] = useState('landing');
@@ -422,29 +422,35 @@ app.get('/', (req, res) => {
 
           <main className="flex-1 flex flex-col">
             {systemAlert && (
-              <div className="bg-amber-500/10 border-b border-amber-500/20 text-amber-300 px-4 py-2 text-xs text-center font-medium">
-                ⚠️ {systemAlert}
+              <div className="bg-amber-500/10 border-b border-amber-500/20 text-amber-300 px-4 py-2 text-xs text-center font-medium flex items-center justify-center gap-2">
+                <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M12 2L1 21h22L12 2zm1 16h-2v-2h2v2zm0-4h-2v-4h2v4z"/></svg>
+                {systemAlert}
               </div>
             )}
 
             {view === 'landing' && (
               <div className="flex-1 flex flex-col justify-center items-center px-4 py-12 max-w-4xl mx-auto text-center">
-                <div className="inline-block px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-xs font-semibold mb-6">
-                  🌍 Global WebRTC & Instant Matching
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-xs font-semibold mb-6">
+                  <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
+                  Global WebRTC & Instant Matching
                 </div>
                 <h1 className="text-5xl font-extrabold text-white mb-4 tracking-tight">Talk to someone new.</h1>
                 <p className="text-gray-400 text-lg mb-10 max-w-xl">Meet random strangers globally over real-time text or video streams.</p>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-lg mb-12">
                   <div onClick={() => startChatting('text')} className="bg-[#121318] border border-gray-800 hover:border-indigo-500 p-6 rounded-2xl cursor-pointer text-left transition hover:-translate-y-1">
-                    <div className="text-3xl mb-3">💬</div>
+                    <div className="mb-3 text-indigo-400">
+                      <svg className="w-8 h-8 fill-current" viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 9h12v2H6V9zm8 5H6v-2h8v2zm4-6H6V6h12v2z"/></svg>
+                    </div>
                     <h3 className="text-xl font-bold text-white mb-1">Text Chat</h3>
                     <p className="text-xs text-gray-400">Pure text-based anonymous conversations.</p>
                     <button className="mt-6 w-full py-2 rounded-xl bg-indigo-600 text-white font-semibold text-xs">Start Texting</button>
                   </div>
 
                   <div onClick={() => startChatting('video')} className="bg-[#121318] border border-gray-800 hover:border-cyan-500 p-6 rounded-2xl cursor-pointer text-left transition hover:-translate-y-1">
-                    <div className="text-3xl mb-3">📹</div>
+                    <div className="mb-3 text-cyan-400">
+                      <svg className="w-8 h-8 fill-current" viewBox="0 0 24 24"><path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/></svg>
+                    </div>
                     <h3 className="text-xl font-bold text-white mb-1">Video Chat</h3>
                     <p className="text-xs text-gray-400">P2P video streaming across networks.</p>
                     <button className="mt-6 w-full py-2 rounded-xl bg-gradient-to-r from-indigo-600 to-cyan-600 text-white font-semibold text-xs">Start Video</button>
@@ -473,11 +479,13 @@ app.get('/', (req, res) => {
                     </div>
 
                     <div className="absolute bottom-4 left-4 flex gap-2 bg-[#0B0C10]/80 backdrop-blur p-2 rounded-xl border border-gray-800">
-                      <button onClick={toggleMic} className={`p-2 rounded-lg text-xs font-semibold ${micActive ? 'bg-gray-800 text-gray-200' : 'bg-red-500/20 text-red-400'}`}>
-                        {micActive ? '🎙️ Mic On' : '🎙️ Mic Off'}
+                      <button onClick={toggleMic} className={`p-2 rounded-lg text-xs font-semibold flex items-center gap-1.5 ${micActive ? 'bg-gray-800 text-gray-200' : 'bg-red-500/20 text-red-400'}`}>
+                        <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.3-3c0 3-2.54 5.1-5.3 5.1S6.7 14 6.7 11H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c3.28-.48 6-3.3 6-6.72h-1.7z"/></svg>
+                        {micActive ? 'Mic On' : 'Mic Off'}
                       </button>
-                      <button onClick={toggleCam} className={`p-2 rounded-lg text-xs font-semibold ${camActive ? 'bg-gray-800 text-gray-200' : 'bg-red-500/20 text-red-400'}`}>
-                        {camActive ? '📹 Cam On' : '📹 Cam Off'}
+                      <button onClick={toggleCam} className={`p-2 rounded-lg text-xs font-semibold flex items-center gap-1.5 ${camActive ? 'bg-gray-800 text-gray-200' : 'bg-red-500/20 text-red-400'}`}>
+                        <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/></svg>
+                        {camActive ? 'Cam On' : 'Cam Off'}
                       </button>
                     </div>
                   </div>
@@ -492,14 +500,18 @@ app.get('/', (req, res) => {
                       </span>
                     </div>
                     {status === 'connected' && (
-                      <button onClick={() => socketRef.current.emit('report_partner')} className="text-xs px-2 py-1 rounded bg-red-500/10 text-red-400 border border-red-500/20">
-                        🚩 Report
+                      <button onClick={() => socketRef.current.emit('report_partner')} className="text-xs px-2 py-1 rounded bg-red-500/10 text-red-400 border border-red-500/20 flex items-center gap-1">
+                        <svg className="w-3 h-3 fill-current" viewBox="0 0 24 24"><path d="M14.4 6L14 4H5v17h2v-7h5.6l.4 2h7V6z"/></svg>
+                        Report
                       </button>
                     )}
                   </div>
 
                   <div className="flex-1 p-4 overflow-y-auto space-y-3">
-                    <div className="text-center text-xs text-gray-500 my-2">🔒 Anonymous & Encrypted Messaging</div>
+                    <div className="flex items-center justify-center gap-1 text-[11px] text-gray-500 my-2">
+                      <svg className="w-3 h-3 fill-current" viewBox="0 0 24 24"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg>
+                      Anonymous & Encrypted Messaging
+                    </div>
                     {messages.map((msg, i) => (
                       <div key={i} className={`flex flex-col ${msg.sender === 'you' ? 'items-end' : 'items-start'}`}>
                         <div className={`max-w-[80%] px-4 py-2 rounded-xl text-sm ${msg.sender === 'you' ? 'bg-indigo-600 text-white' : 'bg-[#1E202B] text-gray-200 border border-gray-800'}`}>
@@ -527,7 +539,10 @@ app.get('/', (req, res) => {
                     </form>
                     <div className="flex gap-2">
                       <button onClick={handleStop} className="flex-1 py-2 rounded-xl bg-gray-800 text-gray-300 font-semibold text-xs">Stop</button>
-                      <button onClick={handleNext} className="flex-[2] py-2 rounded-xl bg-gradient-to-r from-indigo-600 to-cyan-600 text-white font-semibold text-xs">Next Stranger ➔</button>
+                      <button onClick={handleNext} className="flex-[2] py-2 rounded-xl bg-gradient-to-r from-indigo-600 to-cyan-600 text-white font-semibold text-xs flex items-center justify-center gap-1">
+                        Next Stranger
+                        <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M5 13h11.86l-5.43 5.43 1.42 1.42L21.14 12l-8.29-8.29-1.42 1.42L16.86 11H5v2z"/></svg>
+                      </button>
                     </div>
                   </div>
                 </div>
