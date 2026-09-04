@@ -18,7 +18,7 @@
   <!-- Babel Compiler for JSX CDN -->
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
-  <!-- PeerJS for WebRTC Video/Audio P2P Mesh -->
+  <!-- PeerJS Client -->
   <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
 
   <style>
@@ -50,10 +50,23 @@
   <script type="text/babel">
     const { useState, useEffect, useRef } = React;
 
+    const SERVER_URL = "omechat-dshk.onrender.com";
+
+    // WebRTC ICE Configuration with STUN and TURN Relays
     const ICE_CONFIG = {
       iceServers: [
         { urls: 'stun:stun.l.google.com:19302' },
-        { urls: 'stun:stun1.l.google.com:19302' }
+        { urls: 'stun:stun1.l.google.com:19302' },
+        {
+          urls: "turn:openrelay.metered.ca:80",
+          username: "openrelay",
+          credential: "openrelay"
+        },
+        {
+          urls: "turn:openrelay.metered.ca:443",
+          username: "openrelay",
+          credential: "openrelay"
+        }
       ]
     };
 
@@ -79,8 +92,16 @@
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
       }, [messages]);
 
+      // Connect to global signaling server on Render
       useEffect(() => {
-        const peer = new Peer(undefined, { config: ICE_CONFIG });
+        const peer = new Peer(undefined, {
+          host: SERVER_URL,
+          port: 443,
+          path: '/peerjs',
+          secure: true,
+          config: ICE_CONFIG
+        });
+
         peerRef.current = peer;
 
         peer.on('connection', (conn) => {
@@ -99,7 +120,7 @@
               if (localVideoRef.current) localVideoRef.current.srcObject = stream;
               call.answer(stream);
             } catch (err) {
-              console.error("Camera/Mic error", err);
+              console.error("Camera/Mic access error:", err);
             }
           }
 
@@ -175,25 +196,16 @@
           }
         }
 
-        const channel = new BroadcastChannel('omechat_matchmaking');
-        const myPeerId = peerRef.current?.id;
-
-        channel.postMessage({ type: 'LOOKING_FOR_MATCH', mode, peerId: myPeerId });
-
-        const handleMatchMessage = (event) => {
-          const { type, mode: targetMode, peerId: partnerPeerId, targetPeerId } = event.data;
-
-          if (type === 'LOOKING_FOR_MATCH' && targetMode === mode && partnerPeerId !== myPeerId) {
-            channel.postMessage({ type: 'ACCEPT_MATCH', targetPeerId: partnerPeerId, peerId: myPeerId, mode });
-            connectToPeer(partnerPeerId, mode);
-            channel.close();
-          } else if (type === 'ACCEPT_MATCH' && targetPeerId === myPeerId) {
-            connectToPeer(partnerPeerId, mode);
-            channel.close();
-          }
-        };
-
-        channel.onmessage = handleMatchMessage;
+        if (peerRef.current && peerRef.current.id) {
+          fetch(`https://${SERVER_URL}/match?id=${peerRef.current.id}&mode=${mode}`)
+            .then(res => res.json())
+            .then(data => {
+              if (data.partnerId) {
+                connectToPeer(data.partnerId, mode);
+              }
+            })
+            .catch(err => console.error("Matchmaking error:", err));
+        }
       };
 
       const connectToPeer = (partnerPeerId, mode) => {
@@ -403,7 +415,7 @@
                     <div ref={messagesEndRef} />
                   </div>
 
-                  <div className="p-3 border-t border-zinc-900 bg-black flex flex-col gap-2">
+                  <div className="p-[#121318] border-t border-zinc-900 bg-black flex flex-col gap-2 p-3">
                     <form onSubmit={sendMessage} className="flex gap-2">
                       <input
                         type="text"
