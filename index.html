@@ -282,11 +282,11 @@
           <header className="border-b border-gray-800/80 bg-[#121318]/90 backdrop-blur sticky top-0 z-50">
             <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
               <div onClick={handleStop} className="flex items-center gap-3 cursor-pointer group">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 via-indigo-500 to-cyan-400 p-[2px] shadow-lg shadow-indigo-500/20 group-hover:scale-105 transition-transform">
-                  <div className="w-full h-full bg-[#0B0C10] rounded-[10px] flex items-center justify-center">
-                    <div className="w-4 h-4 rounded-full bg-indigo-500 flex items-center justify-center">
-                      <div className="w-1.5 h-1.5 rounded-full bg-cyan-300 animate-ping"></div>
-                    </div>
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 via-indigo-500 to-cyan-400 p-[2px] shadow-lg shadow-indigo-500/20 group-hover:scale-105 transition-transform flex items-center justify-center">
+                  <div className="w-full h-full bg-[#0B0C10] rounded-[10px] flex items-center justify-center p-2">
+                    <svg className="w-full h-full text-cyan-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                    </svg>
                   </div>
                 </div>
                 <div>
@@ -315,8 +315,11 @@
           {/* Main Body */}
           <main className="flex-1 flex flex-col">
             {systemAlert && (
-              <div className="bg-amber-500/10 border-b border-amber-500/20 text-amber-300 px-4 py-2 text-xs text-center font-medium animate-pulse">
-                ⚠️ {systemAlert}
+              <div className="bg-amber-500/10 border-b border-amber-500/20 text-amber-300 px-4 py-2 text-xs text-center font-medium animate-pulse flex items-center justify-center gap-2">
+                <svg className="w-4 h-4 text-amber-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+                <span>{systemAlert}</span>
               </div>
             )}
 
@@ -324,13 +327,16 @@
             {view === 'landing' && (
               <div className="flex-1 flex flex-col justify-center items-center px-4 py-12 max-w-4xl mx-auto text-center">
                 <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-xs font-semibold mb-6">
-                  ✨ Instant, Encrypted & P2P WebRTC Matching
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                  </svg>
+                  <span>Instant, Encrypted &amp; P2P WebRTC Matching</span>
                 </div>
                 
                 <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight text-white mb-4 leading-tight">
                   Talk to someone new.<br />
                   <span className="bg-gradient-to-r from-indigo-400 via-cyan-400 to-teal-300 bg-clip-text text-transparent">
-                    Instantly & Anonymously.
+                    Instantly &amp; Anonymously.
                   </span>
                 </h1>
 
@@ -345,8 +351,10 @@
                     className="group relative bg-[#121318] border border-gray-800 hover:border-indigo-500/50 p-6 rounded-2xl cursor-pointer text-left transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-indigo-500/10 flex flex-col justify-between"
                   >
                     <div>
-                      <div className="w-12 h-12 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 mb-4 group-hover:scale-110 transition-transform text-xl">
-                        💬
+                      <div className="w-12 h-12 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 mb-4 group-hover:scale-110 transition-transform">
+                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                        </svg>
                       </div>
                       <h3 className="text-xl font-bold text-white mb-2">Text Chat</h3>
                       <p className="text-sm text-gray-400">Pure text-based anonymous conversations. Fast and lightweight.</p>
@@ -361,11 +369,13 @@
                     className="group relative bg-[#121318] border border-gray-800 hover:border-cyan-500/50 p-6 rounded-2xl cursor-pointer text-left transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-cyan-500/10 flex flex-col justify-between"
                   >
                     <div>
-                      <div className="w-12 h-12 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400 mb-4 group-hover:scale-110 transition-transform text-xl">
-                        📹
+                      <div className="w-12 h-12 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400 mb-4 group-hover:scale-110 transition-transform">
+                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                        </svg>
                       </div>
                       <h3 className="text-xl font-bold text-white mb-2">Video Chat</h3>
-                      <p className="text-sm text-gray-400">High-definition WebRTC video & audio chat with peer-to-peer connection.</p>
+                      <p className="text-sm text-gray-400">High-definition WebRTC video &amp; audio chat with peer-to-peer connection.</p>
                     </div>
                     <button className="mt-6 w-full py-2.5 rounded-xl bg-gradient-to-r from-indigo-600 to-cyan-600 hover:from-indigo-500 hover:to-cyan-500 text-white font-semibold text-sm transition">
                       Start Video
@@ -387,7 +397,7 @@
                     </div>
                     <div className="bg-[#121318]/50 p-4 rounded-xl border border-gray-800/50">
                       <div className="text-indigo-400 font-bold mb-1">3. Next or Stop</div>
-                      <div className="text-xs text-gray-400">Instantly hit "Next" anytime to leave and switch to a new partner.</div>
+                      <div className="text-xs text-gray-400">Instantly hit &quot;Next&quot; anytime to leave and switch to a new partner.</div>
                     </div>
                   </div>
                 </div>
@@ -433,15 +443,25 @@
                     <div className="absolute bottom-4 left-4 flex gap-2 bg-[#0B0C10]/80 backdrop-blur p-2 rounded-xl border border-gray-800">
                       <button 
                         onClick={toggleMic}
-                        className={`p-2.5 rounded-lg text-xs font-semibold transition ${micActive ? 'bg-gray-800 text-gray-200' : 'bg-red-500/20 text-red-400 border border-red-500/30'}`}
+                        className={`p-2.5 rounded-lg text-xs font-semibold transition flex items-center gap-1.5 ${micActive ? 'bg-gray-800 text-gray-200' : 'bg-red-500/20 text-red-400 border border-red-500/30'}`}
                       >
-                        {micActive ? '🎙️ Mic On' : '🎙️ Mic Off'}
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+                          {micActive ? (
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+                          ) : (
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+                          )}
+                        </svg>
+                        <span>{micActive ? 'Mic On' : 'Mic Off'}</span>
                       </button>
                       <button 
                         onClick={toggleCam}
-                        className={`p-2.5 rounded-lg text-xs font-semibold transition ${camActive ? 'bg-gray-800 text-gray-200' : 'bg-red-500/20 text-red-400 border border-red-500/30'}`}
+                        className={`p-2.5 rounded-lg text-xs font-semibold transition flex items-center gap-1.5 ${camActive ? 'bg-gray-800 text-gray-200' : 'bg-red-500/20 text-red-400 border border-red-500/30'}`}
                       >
-                        {camActive ? '📹 Cam On' : '📹 Cam Off'}
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                        </svg>
+                        <span>{camActive ? 'Cam On' : 'Cam Off'}</span>
                       </button>
                     </div>
                   </div>
@@ -465,17 +485,23 @@
                     {status === 'connected' && (
                       <button 
                         onClick={reportPartner}
-                        className="text-xs px-2.5 py-1 rounded-lg bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/20 transition"
+                        className="text-xs px-2.5 py-1 rounded-lg bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/20 transition flex items-center gap-1"
                       >
-                        🚩 Report
+                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9" />
+                        </svg>
+                        <span>Report</span>
                       </button>
                     )}
                   </div>
 
                   {/* Messages Feed */}
                   <div className="flex-1 p-4 overflow-y-auto space-y-3">
-                    <div className="text-center text-xs text-gray-500 my-2">
-                      🔒 Direct Peer-to-Peer messaging. Do not share sensitive personal information.
+                    <div className="text-center text-xs text-gray-500 my-2 flex items-center justify-center gap-1">
+                      <svg className="w-3.5 h-3.5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                      </svg>
+                      <span>Direct Peer-to-Peer messaging. Do not share sensitive personal information.</span>
                     </div>
 
                     {messages.map((msg, index) => (
@@ -496,7 +522,7 @@
 
                     {status === 'disconnected' && (
                       <div className="text-center my-4 p-3 bg-red-500/10 border border-red-500/20 rounded-xl text-xs text-red-400">
-                        Stranger has disconnected. Click "Next Stranger" to match with a new user.
+                        Stranger has disconnected. Click &quot;Next Stranger&quot; to match with a new user.
                       </div>
                     )}
                     <div ref={messagesEndRef} />
@@ -531,9 +557,12 @@
                       </button>
                       <button
                         onClick={handleNext}
-                        className="flex-[2] py-2 rounded-xl bg-gradient-to-r from-indigo-600 to-cyan-600 hover:from-indigo-500 hover:to-cyan-500 text-white font-semibold text-xs transition shadow-lg shadow-indigo-500/10"
+                        className="flex-[2] py-2 rounded-xl bg-gradient-to-r from-indigo-600 to-cyan-600 hover:from-indigo-500 hover:to-cyan-500 text-white font-semibold text-xs transition shadow-lg shadow-indigo-500/10 flex items-center justify-center gap-1"
                       >
-                        Next Stranger ➔
+                        <span>Next Stranger</span>
+                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                        </svg>
                       </button>
                     </div>
                   </div>
@@ -545,7 +574,7 @@
             {/* View 3: Safety Page */}
             {view === 'guidelines' && (
               <div className="flex-1 max-w-3xl mx-auto px-4 py-10">
-                <h1 className="text-3xl font-bold text-white mb-6">Community & Safety Guidelines</h1>
+                <h1 className="text-3xl font-bold text-white mb-6">Community &amp; Safety Guidelines</h1>
                 <div className="space-y-6 text-gray-300 text-sm leading-relaxed">
                   <section className="bg-[#121318] p-6 rounded-2xl border border-gray-800">
                     <h2 className="text-lg font-semibold text-indigo-400 mb-2">1. Age Requirement</h2>
@@ -568,7 +597,7 @@
 
           {/* Footer */}
           <footer className="border-t border-gray-800/60 py-4 text-center text-xs text-gray-500">
-            © OmeChat. Modern WebRTC Anonymous Random Chat.
+            &copy; OmeChat. Modern WebRTC Anonymous Random Chat.
           </footer>
         </div>
       );
