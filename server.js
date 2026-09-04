@@ -163,6 +163,8 @@ app.get('/', (req, res) => {
   <script type="text/babel">
     const { useState, useEffect, useRef } = React;
 
+    const LOGO_IMAGE = "https://i.imgur.com/7b5dK2M.png"; // Replace with your uploaded image URL or relative path (/logo.png)
+
     function App() {
       const [view, setView] = useState('landing');
       const [chatMode, setChatMode] = useState('text');
@@ -405,12 +407,11 @@ app.get('/', (req, res) => {
           <header className="border-b border-gray-800 bg-[#121318]/90 backdrop-blur sticky top-0 z-50">
             <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
               <div onClick={handleStop} className="flex items-center gap-3 cursor-pointer">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 via-indigo-500 to-cyan-400 p-[2px]">
-                  <div className="w-full h-full bg-[#0B0C10] rounded-[10px] flex items-center justify-center">
-                    <div className="w-2.5 h-2.5 rounded-full bg-indigo-500 animate-ping"></div>
-                  </div>
-                </div>
-                <span className="text-xl font-bold bg-gradient-to-r from-white to-indigo-400 bg-clip-text text-transparent">OmeChat</span>
+                <img 
+                  src={LOGO_IMAGE} 
+                  alt="OmeChat Logo" 
+                  className="h-12 w-auto object-contain py-1"
+                />
               </div>
               <nav className="flex items-center gap-4 text-sm font-medium">
                 <button onClick={() => { handleStop(); setView('landing'); }} className="text-gray-400 hover:text-white">Home</button>
